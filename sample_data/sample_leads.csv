@@ -1,0 +1,21 @@
+company_name,contact_name,email,job_title,industry,employee_count,location,annual_revenue,description
+Northwind Automation GmbH,Lena Fischer,lena@northwind.example,Operations Director,Software,120,"Berlin, Germany",20000000,B2B SaaS workflow automation for logistics teams
+Alpenlogistik AG,Marco Huber,marco@alpenlogistik.example,COO,Logistics,300,"Vienna, Austria",60000000,Freight forwarding with B2B automation needs
+Rheinsoft Systems,Anna Keller,anna@rheinsoft.example,Head of Sales,Software,80,"Cologne, Germany",9000000,SaaS analytics for manufacturing
+Baltic Cargo Partners,Jonas Berg,jonas@balticcargo.example,Fleet Manager,Logistics,200,"Hamburg, Germany",35000000,Regional cargo carrier
+Tiny Pixel Studio,Sam Lee,sam@tinypixel.example,Founder,Software,4,"Leipzig, Germany",150000,Indie game studio
+Sunrise Retail Co,Priya Nair,priya@sunrise.example,Buyer,Retail,900,"Mumbai, India",200000000,Consumer retail chain
+LuckyStar Casino Group,Tom Reed,tom@luckystar.example,Marketing Lead,Gambling,250,"Munich, Germany",50000000,Online betting B2B SaaS platform
+Helping Hands Foundation,Eva Roth,eva@helpinghands.example,Director,Software,60,"Berlin, Germany",8000000,Nonprofit SaaS for charities
+Mystery Corp,,,,,,,,
+Greenfield Foods,Ola Nord,ola@greenfield.example,CEO,Food,150,"Graz, Austria",,Packaged food producer
+Datenwerk GmbH,Ingrid Vogel,ingrid@datenwerk.example,CTO,Software,45,"Stuttgart, Germany",6000000,B2B data automation SaaS
+Zephyr Freight,Kai Brandt,kai@zephyr.example,Ops Lead,Logistics,,"Salzburg, Austria",,Last-mile delivery
+Orbit Cloud Labs,Mia Wong,mia@orbitcloud.example,VP Sales,Software,400,Singapore,80000000,B2B SaaS automation platform
+Kleinmann Handwerk,Paul Klein,paul@kleinmann.example,Owner,Construction,12,"Linz, Austria",900000,Family carpentry
+Vienna Parcel Express,Nina Gruber,nina@vpe.example,Director,Logistics,500,"Vienna, Austria",95000000,"Parcel logistics, automation roadmap"
+Brightpath Consulting,Leo Adler,,Partner,Consulting,70,"Frankfurt, Germany",7000000,
+CloudNine Payments,Sara Ivanov,sara@cloudnine.example,Head of Ops,Fintech,180,"Berlin, Germany",30000000,B2B payments SaaS
+Alpine Sensors,Hans Maier,hans@alpinesensors.example,Sales Dir.,Manufacturing,260,"Innsbruck, Austria",40000000,Industrial sensors
+Nordlicht Software,Freja Lund,freja@nordlicht.example,CEO,Software,95,"Hamburg, Germany",,SaaS automation for B2B billing
+Data Dunes Ltd,,,,Software,,,,Analytics startup

@@ -1,0 +1,23 @@
+# Optional: MySQL 8.4 in Docker (multi-arch image, runs natively on Apple Silicon).
+# Usage:  MYSQL_ROOT_PASSWORD=... MYSQL_APP_PASSWORD=... docker compose up -d db
+# Then set DATABASE_URL=mysql+pymysql://salesagent:<MYSQL_APP_PASSWORD>@127.0.0.1:3306/sales_agent
+# The app user created here is the only account the application uses.
+services:
+  db:
+    image: mysql:8.4
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?set MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: sales_agent
+      MYSQL_USER: salesagent
+      MYSQL_PASSWORD: ${MYSQL_APP_PASSWORD:?set MYSQL_APP_PASSWORD}
+    ports:
+      - "127.0.0.1:3306:3306"
+    volumes:
+      - sales_agent_mysql:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1"]
+      interval: 5s
+      retries: 20
+volumes:
+  sales_agent_mysql:

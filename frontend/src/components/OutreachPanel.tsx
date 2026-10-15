@@ -1,0 +1,88 @@
+import { useState } from "react";
+import { useAsync } from "../hooks/useAsync";
+import { api } from "../services/api";
+import type { Draft } from "../types";
+import { apiProblem, ApiProblem } from "../utils/errors";
+import { fmtDate, label } from "../utils/format";
+import { Badge, Button, Card, ErrorBox, Select, Spinner, useToast } from "./ui";
+
+export function DraftEditor({ draft, onChanged }: { draft: Draft; onChanged: () => void }) {
+  const toast = useToast();
+  const [subject, setSubject] = useState(draft.subject ?? "");
+  const [body, setBody] = useState(draft.body);
+  const [busy, setBusy] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [problem, setProblem] = useState<ApiProblem | null>(null);
+  const locked = draft.status === "superseded";
+  const dirty = body !== draft.body || subject !== (draft.subject ?? "");
+
+  async function save(status?: string) {
+    if (!body.trim()) { setProblem({ message: "The message body cannot be empty." }); return; }
+    setBusy(true); setProblem(null);
+    try { await api.editDraft(draft.id, { body, ...(draft.channel === "email" ? { subject } : {}), ...(status ? { status } : {}) }); toast("success", "Draft saved"); onChanged(); }
+    catch (e) { setProblem(apiProblem(e)); } finally { setBusy(false); }
+  }
+  async function regenerate() {
+    setBusy(true); setProblem(null);
+    try { await api.regenerateDraft(draft.id); toast("success", "New draft generated; the previous one was kept in history"); onChanged(); }
+    catch (e) { setProblem(apiProblem(e)); } finally { setBusy(false); }
+  }
+  return (
+    <div className={`rounded-md border p-3 ${locked ? "border-slate-200 bg-slate-50 opacity-70" : "border-slate-300"}`}>
+      <div className="mb-2 flex flex-wrap items-center gap-2 text-xs text-slate-500">
+        <Badge value={draft.status} /> <span>{label(draft.channel)} · {draft.tone} · {draft.length}</span><span>{fmtDate(draft.created_at)}</span>
+      </div>
+      {!locked && <p className="mb-2 rounded bg-amber-50 p-2 text-xs text-amber-800">{draft.review_notice}</p>}
+      {draft.channel === "email" && (
+        <label className="mb-2 block text-sm"><span className="font-medium">Subject</span>
+          <input className="mt-1 w-full rounded-md border border-slate-300 px-2 py-1.5" value={subject} disabled={locked} onChange={(e) => setSubject(e.target.value)} /></label>)}
+      <label className="block text-sm"><span className="font-medium">Message</span>
+        <textarea className="mt-1 w-full rounded-md border border-slate-300 px-2 py-1.5 font-mono text-sm" rows={9} value={body} disabled={locked} onChange={(e) => setBody(e.target.value)} /></label>
+      {draft.personalization_note && <p className="mt-1 text-xs text-slate-500">Personalisation basis: {draft.personalization_note}</p>}
+      <div className="mt-2"><ErrorBox problem={problem} /></div>
+      {!locked && <div className="mt-2 flex flex-wrap gap-2">
+        {draft.channel === "email" && <Button disabled={busy || sending || dirty} onClick={async () => {
+          if (!window.confirm("Send this email to the lead now? Please verify the recipient and message first.")) return;
+          setSending(true); setProblem(null);
+          try { const r = await api.sendDraft(draft.id); toast("success", `Email sent to ${r.to}`); onChanged(); }
+          catch (e) { setProblem(apiProblem(e)); } finally { setSending(false); }
+        }}>{sending ? "Sending…" : "Send email"}</Button>}
+        <Button disabled={busy || !dirty} onClick={() => save()}>Save edits</Button>
+        <Button variant="secondary" disabled={busy || dirty} onClick={() => save(draft.status === "approved" ? "draft" : "approved")}>{draft.status === "approved" ? "Mark as draft" : "Mark as reviewed"}</Button>
+        <Button variant="secondary" disabled={busy} onClick={regenerate}>{busy ? "Working…" : "Regenerate"}</Button>
+        <Button variant="ghost" onClick={() => navigator.clipboard?.writeText(`${draft.channel === "email" ? subject + "\n\n" : ""}${body}`).then(() => toast("success", "Copied to clipboard"))}>Copy</Button>
+      </div>}
+    </div>
+  );
+}
+
+export default function OutreachPanel({ leadId }: { leadId: number }) {
+  const toast = useToast();
+  const { data, loading, error, reload } = useAsync(() => api.drafts(leadId), [leadId]);
+  const [opts, setOpts] = useState({ channel: "email", tone: "professional", length: "short", objective: "Introduce myself and ask whether a short introductory conversation would be useful" });
+  const [busy, setBusy] = useState(false);
+  const [problem, setProblem] = useState<ApiProblem | null>(null);
+  async function generate() {
+    setBusy(true); setProblem(null);
+    try { await api.createDraft(leadId, opts); toast("success", "Draft generated"); await reload(); } catch (e) { setProblem(apiProblem(e)); } finally { setBusy(false); }
+  }
+  return (
+    <Card title="Outreach drafts">
+      <p className="mb-3 text-sm text-slate-600">Drafts are generated by the local model from the lead record only. Review and save your edits before using Send email. Sending requires SMTP configuration; replies are not auto-sent unless an inbox integration is separately configured.</p>
+      <div className="grid gap-3 md:grid-cols-4">
+        <Select label="Channel" value={opts.channel} onChange={(e) => setOpts({ ...opts, channel: e.target.value })}><option value="email">Email</option><option value="linkedin">LinkedIn message</option><option value="follow_up">Short follow-up</option></Select>
+        <Select label="Tone" value={opts.tone} onChange={(e) => setOpts({ ...opts, tone: e.target.value })}><option value="professional">Professional</option><option value="friendly">Friendly</option><option value="concise">Concise</option></Select>
+        <Select label="Length" value={opts.length} onChange={(e) => setOpts({ ...opts, length: e.target.value })}><option value="short">Short</option><option value="medium">Medium</option><option value="long">Long</option></Select>
+        <div className="flex items-end"><Button disabled={busy} onClick={generate}>{busy ? "Generating…" : "Generate draft"}</Button></div>
+        <label className="text-sm md:col-span-4"><span className="mb-1 block font-medium">Objective</span>
+          <input maxLength={300} className="w-full rounded-md border border-slate-300 px-2 py-1.5" value={opts.objective} onChange={(e) => setOpts({ ...opts, objective: e.target.value })} /></label>
+      </div>
+      {busy && <Spinner text="The local model is writing the draft…" />}
+      <div className="mt-3"><ErrorBox problem={problem} onRetry={generate} /></div>
+      <div className="mt-4 space-y-3">
+        {loading ? <Spinner /> : error ? <ErrorBox problem={error} onRetry={reload} /> : !data?.items.length ? <p className="text-sm text-slate-500">No drafts yet.</p>
+          : data.items.map((d) => <DraftEditor key={`${d.id}-${d.created_at}-${d.status}`} draft={d} onChanged={reload} />)}
+      </div>
+    </Card>
+  );
+}
