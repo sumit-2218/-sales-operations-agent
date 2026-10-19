@@ -1,25 +1,49 @@
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
-import { useAuth } from "../hooks/useAuth";
-import { label } from "../utils/format";
+import { normalizeRole, useAuth } from "../hooks/useAuth";
 
-const link = ({ isActive }: { isActive: boolean }) => `block rounded-xl px-3 py-2.5 text-sm font-medium transition-colors ${isActive ? "bg-indigo-600 text-white shadow-sm" : "text-slate-600 hover:bg-indigo-50 hover:text-indigo-700"}`;
+const navItems = [
+  { to: "/dashboard", label: "Overview", icon: "◫", end: true },
+  { to: "/leads", label: "Leads", icon: "◎" },
+  { to: "/import", label: "Import CSV", icon: "⇧" },
+  { to: "/icp", label: "ICP settings", icon: "⌘" },
+  { to: "/follow-ups", label: "Follow-ups", icon: "◷" },
+  { to: "/profile", label: "Profile", icon: "◉" },
+];
+const link = ({ isActive }: { isActive: boolean }) => `app-nav-link ${isActive ? "app-nav-link-active" : ""}`;
 
 export default function AppLayout() {
   const { user, signOut } = useAuth();
   const nav = useNavigate();
+  const isAdmin = normalizeRole(user?.role) === "admin";
+  const adminItems = [
+    { to: "/admin", label: "Admin overview", icon: "▦", end: true },
+    { to: "/admin/users", label: "User management", icon: "♙" },
+    { to: "/admin/system", label: "System status", icon: "⌁" },
+  ];
   return (
-    <div className="flex min-h-screen flex-col md:flex-row">
-      <aside className="z-10 w-full shrink-0 border-b border-slate-200/80 bg-white p-3 md:sticky md:top-0 md:h-screen md:w-60 md:border-b-0 md:border-r md:p-5">
-        <div className="mb-4 flex items-center gap-3 px-2 md:mb-8"><div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-600 to-violet-500 text-lg font-black text-white shadow-md">S</div><div><p className="font-bold tracking-tight text-slate-900">Sales Ops</p><p className="text-xs text-slate-500">Intelligence workspace</p></div></div>
+    <div className="app-shell flex min-h-screen flex-col md:flex-row">
+      <aside className="app-sidebar z-10 w-full shrink-0 p-3 md:sticky md:top-0 md:h-screen md:w-64 md:p-5">
+        <div className="app-brand mb-4 flex items-center gap-3 px-2 md:mb-9">
+          <div className="app-brand-mark flex h-11 w-11 items-center justify-center rounded-2xl text-lg font-black text-white">S</div>
+          <div><p className="font-bold tracking-tight text-slate-950">Sales Ops</p><p className="text-xs text-slate-500">Intelligence workspace</p></div>
+        </div>
+        <p className="app-nav-caption px-3 pb-2">WORKSPACE</p>
         <nav className="flex gap-1 md:block md:space-y-1" aria-label="Main">
-          <NavLink to="/" end className={link}>Overview</NavLink><NavLink to="/leads" className={link}>Leads</NavLink><NavLink to="/import" className={link}>Import CSV</NavLink><NavLink to="/icp" className={link}>ICP settings</NavLink><NavLink to="/follow-ups" className={link}>Follow-ups</NavLink><NavLink to="/profile" className={link}>Profile</NavLink>
-          {user?.role === "admin" && <><p className="hidden px-3 pt-5 text-xs font-bold uppercase tracking-wider text-slate-400 md:block">Administration</p><NavLink to="/admin" end className={link}>Admin overview</NavLink><NavLink to="/admin/users" className={link}>Users</NavLink><NavLink to="/admin/system" className={link}>System status</NavLink></>}
+          {navItems.map((item) => <NavLink key={item.to} to={item.to} end={item.end} className={link}><span className="app-nav-icon" aria-hidden="true">{item.icon}</span><span>{item.label}</span></NavLink>)}
+          {isAdmin && <>
+            <p className="app-nav-caption px-3 pb-2 pt-5">ADMINISTRATION</p>
+            {adminItems.map((item) => <NavLink key={item.to} to={item.to} end={item.end} className={link}><span className="app-nav-icon" aria-hidden="true">{item.icon}</span><span>{item.label}</span></NavLink>)}
+          </>}
         </nav>
-        <div className="mt-5 hidden rounded-2xl bg-gradient-to-br from-indigo-50 to-violet-50 p-4 md:block"><p className="text-sm font-semibold text-indigo-950">Work smarter</p><p className="mt-1 text-xs leading-5 text-indigo-800/80">Qualify leads, personalise outreach, and keep every follow-up on track.</p></div>
+        <div className="app-sidebar-note mt-6 hidden rounded-2xl p-4 md:block"><p className="text-sm font-semibold">A clearer view of your pipeline</p><p className="mt-1 text-xs leading-5">Qualify leads, personalise outreach, and keep every follow-up moving.</p></div>
+        <div className="app-sidebar-footer mt-auto hidden items-center gap-3 px-2 pt-8 md:flex"><div className="app-avatar">{user?.name?.trim()?.charAt(0)?.toUpperCase() || "U"}</div><div className="min-w-0"><p className="truncate text-sm font-semibold text-slate-800">{user?.name ?? "Workspace user"}</p><p className="truncate text-xs text-slate-500">{user?.email ?? ""}</p></div></div>
       </aside>
       <div className="min-w-0 flex-1">
-        <header className="sticky top-0 z-5 flex min-h-16 items-center justify-between gap-3 border-b border-slate-200/80 bg-white/90 px-4 py-3 backdrop-blur md:px-8"><div className="min-w-0"><p className="truncate text-sm font-semibold text-slate-900">Welcome back, {user?.name?.split(" ")[0] ?? "there"}</p><p className="text-xs text-slate-500">Your sales workspace</p></div><div className="flex items-center gap-3"><span className="hidden rounded-full bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 sm:inline-flex">● Workspace active</span><button className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 transition hover:border-indigo-200 hover:bg-indigo-50" onClick={async () => { await signOut(); nav("/login"); }}>Log out</button></div></header>
-        <main className="mx-auto max-w-7xl space-y-5 p-4 md:p-8"><Outlet /></main>
+        <header className="app-topbar sticky top-0 z-20 flex min-h-20 items-center justify-between gap-3 px-4 py-3 md:px-8">
+          <div className="min-w-0"><p className="text-xs font-semibold uppercase tracking-[.16em] text-indigo-600">Sales workspace</p><p className="truncate text-lg font-bold tracking-tight text-slate-950">Welcome back, {user?.name?.split(" ")[0] ?? "there"}</p></div>
+          <div className="flex items-center gap-3"><span className="app-status-pill hidden sm:inline-flex"><span className="app-status-dot" />Workspace active</span><button className="app-logout" onClick={async () => { await signOut(); nav("/login"); }}>Log out <span aria-hidden="true">↗</span></button></div>
+        </header>
+        <main className="app-main mx-auto max-w-[1440px] space-y-6 p-4 md:p-8"><Outlet /></main>
       </div>
     </div>
   );

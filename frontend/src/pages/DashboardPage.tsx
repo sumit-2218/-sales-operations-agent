@@ -5,8 +5,7 @@ import { api } from "../services/api";
 import { fmtDate, label } from "../utils/format";
 
 const Stat = ({ title, value, to, danger }: { title: string; value: number; to?: string; danger?: boolean }) => {
-  const body = <div className={`rounded-lg border bg-white p-4 shadow-sm ${danger && value > 0 ? "border-red-300" : "border-slate-200"}`}>
-    <p className="text-xs uppercase text-slate-500">{title}</p><p className={`text-2xl font-bold ${danger && value > 0 ? "text-red-700" : ""}`}>{value}</p></div>;
+  const body = <div className={`dashboard-stat rounded-2xl border bg-white p-4 shadow-sm ${danger && value > 0 ? "dashboard-stat-danger border-red-300" : "border-slate-200"}`}><div className="flex items-start justify-between gap-2"><p className="text-xs font-semibold uppercase tracking-wide text-slate-500">{title}</p><span className="dashboard-stat-mark" aria-hidden="true">{danger ? "!" : "↗"}</span></div><p className={`mt-3 text-3xl font-bold tracking-tight ${danger && value > 0 ? "text-red-700" : "text-slate-900"}`}>{value.toLocaleString()}</p><p className="mt-1 text-xs text-slate-400">{danger && value > 0 ? "Needs attention" : "Current total"}</p></div>;
   return to ? <Link to={to}>{body}</Link> : body;
 };
 
@@ -20,7 +19,7 @@ export default function DashboardPage() {
   const max = Math.max(1, ...cats.map(([, v]) => v));
   return (
     <>
-      <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-950 via-indigo-950 to-violet-900 p-6 text-white shadow-lg sm:p-8">
+      <section className="dashboard-hero relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-950 via-indigo-950 to-violet-900 p-6 text-white shadow-lg sm:p-8">
         <div className="relative z-10 max-w-2xl"><p className="text-xs font-bold uppercase tracking-[.2em] text-indigo-200">Sales intelligence</p><h1 className="mt-2 text-2xl font-bold tracking-tight sm:text-3xl">Your pipeline, at a glance.</h1><p className="mt-2 max-w-xl text-sm leading-6 text-indigo-100/80">Track lead quality, keep outreach moving, and stay ahead of every follow-up.</p><div className="mt-5 flex flex-wrap gap-2"><Link to="/leads" className="rounded-xl bg-white px-4 py-2.5 text-sm font-semibold text-indigo-950 transition hover:bg-indigo-50">View leads →</Link><Link to="/import" className="rounded-xl border border-white/25 bg-white/10 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-white/20">Import leads</Link></div></div>
         <div aria-hidden="true" className="pointer-events-none absolute -right-8 -top-16 h-64 w-64 rounded-full border-[32px] border-white/5 sm:right-8 sm:top-[-4rem]"/><div aria-hidden="true" className="pointer-events-none absolute -bottom-28 right-24 h-64 w-64 rounded-full bg-violet-400/10 blur-2xl"/>
       </section>

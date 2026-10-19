@@ -1,7 +1,7 @@
 import { ReactNode } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 import { Spinner } from "./components/ui";
-import { useAuth } from "./hooks/useAuth";
+import { normalizeRole, useAuth } from "./hooks/useAuth";
 import AppLayout from "./layouts/AppLayout";
 import AdminOverview from "./pages/AdminOverview";
 import AdminSystem from "./pages/AdminSystem";
@@ -9,6 +9,7 @@ import AdminUsers from "./pages/AdminUsers";
 import DashboardPage from "./pages/DashboardPage";
 import FollowUpsPage from "./pages/FollowUpsPage";
 import IcpPage from "./pages/IcpPage";
+import HomePage from "./pages/HomePage";
 import ImportPage from "./pages/ImportPage";
 import LeadDetailPage from "./pages/LeadDetailPage";
 import LeadFormPage from "./pages/LeadFormPage";
@@ -22,17 +23,18 @@ function Protected({ roles, children }: { roles?: Role[]; children: ReactNode })
   const { user, loading } = useAuth();
   if (loading) return <Spinner />;
   if (!user) return <Navigate to="/login" replace />;
-  if (roles && !roles.includes(user.role)) return <Navigate to="/" replace />;
+  if (roles && !roles.includes(normalizeRole(user.role))) return <Navigate to="/dashboard" replace />;
   return <>{children}</>;
 }
 
 export default function App() {
   return (
     <Routes>
+      <Route path="/" element={<HomePage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
       <Route element={<Protected><AppLayout /></Protected>}>
-        <Route index element={<DashboardPage />} />
+        <Route path="dashboard" element={<DashboardPage />} />
         <Route path="leads" element={<LeadsPage />} />
         <Route path="leads/new" element={<LeadFormPage />} />
         <Route path="leads/:id" element={<LeadDetailPage />} />
